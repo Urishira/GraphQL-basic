@@ -9,6 +9,7 @@ const persons = [
     age: 30,
     phone: "555-555-5555",
     city: "New York",
+    street: "123 Main St",
     id: uuidv4(),
   },
   {
@@ -16,6 +17,7 @@ const persons = [
     age: 25,
     phone: "555-555-5555",
     city: "New York",
+    street: " 123 Main St",
     id: uuidv4(),
   },
   {
@@ -23,17 +25,23 @@ const persons = [
     age: 20,
     phone: "555-555-5555",
     city: "New York",
+    street: " 123 Main St",
     id: uuidv4(),
   },
 ];
 
 const typeDefs = gql`
+  type Address {
+    city: String!
+    street: String!
+  }
   type Person {
     name: String!
     age: String!
     phone: String!
     city: String!
     id: ID!
+    address: Address!
   }
 
   type Query {
@@ -41,15 +49,40 @@ const typeDefs = gql`
     allPersons: [Person]!
     findPerson(name: String!): Person
   }
+  type Mutation {
+    addPerson(
+      name: String!
+      age: String!
+      phone: String!
+      city: String!
+      street: String!
+    ): Person
+  }
 `;
 
 const resolvers = {
   Query: {
     personCount: () => person.length,
     allPersons: () => person,
-    findPerson: (_, args) => {
+    findPerson: (root, args) => {
       const { name } = args;
       return persons.find((p) => p.name === name);
+    },
+  },
+  Person: {
+    address: (root) => {
+      const { city, street } = root;
+      return { city, street };
+    },
+  },
+  Mutation: {
+    addPerson: (root, args) => {
+      const newPerson = {
+        ...args,
+        id: uuidv4(),
+      };
+      persons.push(newPerson);
+      return newPerson;
     },
   },
 };
